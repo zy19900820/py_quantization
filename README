@@ -1,0 +1,9 @@
+timingInsertMongo.py             get fmex candles and insert mangodb
+
+Requirements
+
+1.install pip and pymongo
+sudo install pip
+pip install pymongo
+
+2.install mongodb
