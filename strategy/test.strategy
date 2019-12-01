@@ -1,0 +1,6 @@
+interval_time = 14400
+R1 = high(48H) - low(48H)
+R2 = high(72H) - low(72H)
+long_limit = open - R1 * 0.12
+stopless = 500
+profit_target = R1 * 0.32
