@@ -75,9 +75,9 @@ class Fmex():
             except requests.exceptions.HTTPError as err:
                 print(err)
                 print(r.text)
-                print full_url
-                print payload
-                print headers
+                print(full_url)
+                print(payload)
+                print(headers)
                 time.sleep(0.2)
             if r.status_code == 200:
                 return r.json()
@@ -87,7 +87,7 @@ class Fmex():
                                 # {"status":1016,"msg":"account balance insufficient"}
             else:
                 time.sleep(5)
-                print str(r.status_code)
+                print(r.status_code)
 
     def get_contracts_symbols(self):
         """Get contracts symbols"""

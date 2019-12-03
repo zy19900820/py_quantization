@@ -4,7 +4,7 @@ from commonlib import getBeforeClose
 import commonlib
 import time
 from pymongo import MongoClient
-#from fmex import Fmex
+from fmex import Fmex
 import strategyParse
 from trade import Trade
 import matplotlib
@@ -111,7 +111,17 @@ def waitEvent(dictStrategy, listIndex):
             return waitEvent[i]
     return "nothing happen"
 
+def runRealTime():
+    global gRunRealTime
+    gRunRealTime = True
+    run()
+
 def runSimulation():
+    global gRunRealTime
+    gRunRealTime = False
+    run()
+
+def run():
     loadMongoData()
     # this is test strategy FIXME
     dictStrategy = strategyParse.parseStrategy("../strategy/trendFiveMinClose2.strategy")
@@ -157,6 +167,8 @@ global gTrades
 gTrades = []
 global gNowTrade
 gNowTrade = Trade()
+global gRunRealTime
+gRunRealTime = False
 
 if __name__ == '__main__':
     runSimulation()
