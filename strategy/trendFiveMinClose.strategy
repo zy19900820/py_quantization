@@ -1,0 +1,17 @@
+{
+    "waitEvent" : ["openLong", "openShort", "closePosition"],
+    "openLong" : {
+        "formula" : "('short' == getDirection(${gOneMinListData}, ${listIndex}, 4)) and (${position} == 0)",
+        "price" : "${preMinClose}",
+        "count" : 1000
+    },
+    "openShort" : {
+        "formula" : "('long' == getDirection(${gOneMinListData}, ${listIndex}, 4)) and (${position} == 0)",
+        "price" : "${preMinClose}",
+        "count" : 1000
+    },
+    "closePosition" : {
+        "formula" : "(${nowTimeStamp} >= ${openPositionTimeStamp} + 60 * 5) and (${position} != 0)",
+        "price" : "${preMinClose}"
+    }
+}
