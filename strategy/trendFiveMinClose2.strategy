@@ -1,12 +1,12 @@
 {
     "waitEvent" : ["openLong", "openShort", "closePosition"],
-    "openShort" : {
-        "formula" : "('short' == getDirection(${gOneMinListData}, ${listIndex}, 4)) and (${position} == 0)",
+    "openLong" : {
+        "formula" : "('short' == getDirection(${gOneMinListData}, ${listIndex}, 2)) and (${position} == 0)",
         "price" : "getBeforeClose(${gOneMinListData}, ${listIndex}, 1)",
         "count" : "position1000()"
     },
-    "openLong" : {
-        "formula" : "('long' == getDirection(${gOneMinListData}, ${listIndex}, 4)) and (${position} == 0)",
+    "openShort" : {
+        "formula" : "('long' == getDirection(${gOneMinListData}, ${listIndex}, 2)) and (${position} == 0)",
         "price" : "getBeforeClose(${gOneMinListData}, ${listIndex}, 1)",
         "count" : "position1000()"
     },

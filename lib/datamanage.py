@@ -48,7 +48,8 @@ def doShort(listIndex, eventType):
 
     gNowTrade.entryPrice_ = eval(commonlib.replaceJudgeStr(eventType["price"]))
     gNowTrade.entryTimeStamp_ = gOneMinListData[listIndex]["id"]
-    gNowTrade.position_ = gNowTrade.position_ - eval(commonlib.replaceJudgeStr(eventType["count"]))
+    count = eval(commonlib.replaceJudgeStr(eventType["count"]))
+    gNowTrade.position_ = gNowTrade.position_ - count
     gNowTrade.direction_ = "short"
 
     trade = Trade(gNowTrade)
@@ -75,15 +76,28 @@ def doClose(listIndex, eventType):
     global gNowTrade
 
     gNowTrade.exitPrice_ = eval(commonlib.replaceJudgeStr(eventType["price"]))
-    gNowTrade.position_ = 0
+    coinNum = gNowTrade.coinNum_
+    print("ori coin num:%lf" % coinNum)
+    position = gNowTrade.position_
+    print(position)
+    if (position < 0):
+        position = 0 - position
+    print(position)
     if (gNowTrade.direction_ == "short"):
-        gNowTrade.coinNum_ = gNowTrade.coinNum_ - 10000 / gNowTrade.entryPrice_ + 10000 / gNowTrade.exitPrice_
+        gNowTrade.coinNum_ = gNowTrade.coinNum_ - position / gNowTrade.entryPrice_ + position / gNowTrade.exitPrice_
+        print("do short...")
     else:
-        gNowTrade.coinNum_ = gNowTrade.coinNum_ + 10000 / gNowTrade.entryPrice_ - 10000 / gNowTrade.exitPrice_
+        gNowTrade.coinNum_ = gNowTrade.coinNum_ + position / gNowTrade.entryPrice_ - position / gNowTrade.exitPrice_
+        print("do long...")
     gNowTrade.direction_ = "non-direction"
+
+    gNowTrade.position_ = 0
 
     trade = Trade(gNowTrade)
 
+    print("now coin num:%lf" % trade.coinNum_)
+    print("enterPrice:%lf  exitPrice:%lf"% (trade.entryPrice_, trade.exitPrice_))
+    print("      ")
     gTrades.append(trade)    
 
 def waitEvent(dictStrategy, listIndex):
