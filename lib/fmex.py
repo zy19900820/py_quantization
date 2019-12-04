@@ -13,8 +13,8 @@ class Fmex():
         self.base_url = base_url
 
     def auth(self, key, secret):
-        self.key = key
-        self.secret = secret
+        self.key = bytes(key,'utf-8') 
+        self.secret = bytes(secret, 'utf-8')
 
 
     def public_request(self, method, api_url, **payload):
@@ -44,8 +44,8 @@ class Fmex():
 
         param=''
         if payload:
-            sort_pay = payload.items()
-            sort_pay.sort()
+            sort_pay = sorted(payload.items())
+            #sort_pay.sort()
             for k in sort_pay:
                 param += '&' + str(k[0]) + '=' + str(k[1])
             param = param.lstrip('&')
@@ -59,7 +59,7 @@ class Fmex():
         elif method == 'POST':
             sig_str = method + full_url + timestamp + param
 
-        signature = self.get_signed(sig_str)
+        signature = self.get_signed(bytes(sig_str, 'utf-8'))
 
         headers = {
             'FC-ACCESS-KEY': self.key,
