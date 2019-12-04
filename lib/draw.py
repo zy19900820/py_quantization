@@ -27,4 +27,19 @@ def drawPosition(trades):
     
     plt.plot(timeStamp, position)
     fig.savefig('../pic/position.png')
-    #plt.show()
+
+def drawPrice(trades):
+    fig = plt.figure()
+
+    timeStamp = []
+    price = []
+
+    for i in range(len(trades)):
+        timeStamp.append(trades[i].entryTimeStamp_)
+        if (trades[i].direction_ == "non-direction"):
+            price.append(trades[i].exitPrice_)
+        else:
+            price.append(trades[i].entryPrice_)
+    
+    plt.plot(timeStamp, price)
+    fig.savefig('../pic/price.png')

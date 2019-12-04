@@ -4,12 +4,9 @@ from commonlib import getBeforeClose
 import commonlib
 import time
 from pymongo import MongoClient
-from fmex import Fmex
-import strategyParse
 from trade import Trade
 import sys
-import conf
-import draw
+import fmexOperation
 
 def loadMongoData():
     print("loadMongoData start...")
@@ -23,257 +20,84 @@ def loadMongoData():
 
     print("loadMongoData end...")
 
-def position1000():
-    return 1
-
-def eventJudge(eventType, listIndex):
-    global gOneMinListData
-    global gNowTrade
+def setRunType(bRunRealTime):
     global gRunRealTime
+    gRunRealTime = bRunRealTime
 
-    nowTimeStamp = 0
+def getOneMinData():
+    global gRunRealTime
+    global gOneMinListData
     if (gRunRealTime == False):
-        nowTimeStamp = gOneMinListData[listIndex]["id"]
+        return gOneMinListData
     else:
-        nowTimeStamp = int(time.time())
+        return fmexOperation.getOneMinData()
 
-    position = gNowTrade.position_
-    openPositionTimeStamp = gNowTrade.entryTimeStamp_
-
-    eventJudgeStr = eventType["formula"]
-    evalStr = commonlib.replaceJudgeStr(eventJudgeStr)
-    if (evalStr == ""):
-        print("replaceJudgeStr Error, ori string:%s" % eventJudgeStr)
-        return False
-    return eval(evalStr)
-
-def doShort(listIndex, eventType):
-    global gTrades
-    global gOneMinListData
-    global gNowTrade
+def getStartIndex():
     global gRunRealTime
-    global gfmex
-
     if (gRunRealTime == False):
-        gNowTrade.entryPrice_ = eval(commonlib.replaceJudgeStr(eventType["price"]))
-        gNowTrade.entryTimeStamp_ = gOneMinListData[listIndex]["id"]
-        count = eval(commonlib.replaceJudgeStr(eventType["count"]))
-        gNowTrade.position_ = gNowTrade.position_ - count
-        gNowTrade.direction_ = "short"
-
-        trade = Trade(gNowTrade)
-
-        gTrades.append(trade)    
+        return 0
     else:
-        entryPrice = eval(commonlib.replaceJudgeStr(eventType["price"]))
-        count = eval(commonlib.replaceJudgeStr(eventType["count"]))
-        #5次尝试在那个位置挂单 没挂上去则取消
-        for i in range(0, 5):
-            orderInfo = gfmex.sell_post_only_limit_short("btcusd_p", entryPrice, count)
-            orderStatus = orderInfo["data"]["status"]
-            if (orderStatus == "fully_cancelled"):
-                time.sleep(1)
-                continue
-            elif (orderStatus == "pending"):
-                gNowTrade.uuid_ = orderInfo["data"]["id"]
-                gNowTrade.entryPrice_ = entryPrice
-                gNowTrade.entryTimeStamp_ = int(time.time())
-                gNowTrade.position_ = count
-                gNowTrade.direction_ = "short"
-                trade = Trade(gNowTrade)
-                gTrades.append(trade)
-                print("do short, price:%lf, count:%d time:%d" % (entryPrice, count, trade.entryTimeStamp_,))
-                break
+        #default 20
+        return 20
 
-def doLong(listIndex, eventType):
-    global gTrades
-    global gOneMinListData
-    global gNowTrade
+def ifHaveData(listIndex):
     global gRunRealTime
-    global gfmex
-
+    global gOneMinListData
     if (gRunRealTime == False):
-        gNowTrade.entryTimeStamp_ = gOneMinListData[listIndex]["id"]
-        gNowTrade.entryPrice_ = eval(commonlib.replaceJudgeStr(eventType["price"]))
-        gNowTrade.position_ = gNowTrade.position_ + eval(commonlib.replaceJudgeStr(eventType["count"]))
-        gNowTrade.direction_ = "long"
-    
-        trade = Trade(gNowTrade)
-
-        gTrades.append(trade)    
+        return listIndex < len(gOneMinListData)
     else:
-        entryPrice = eval(commonlib.replaceJudgeStr(eventType["price"]))
-        count = eval(commonlib.replaceJudgeStr(eventType["count"]))
-        #5次尝试在那个位置挂单 没挂上去则取消
-        for i in range(0, 5):
-            orderInfo = gfmex.buy_post_only_limit_long("btcusd_p", entryPrice, count)
-            orderStatus = orderInfo["data"]["status"]
-            if (orderStatus == "fully_cancelled"):
-                time.sleep(1)
-                continue
-            elif (orderStatus == "pending"):
-                gNowTrade.uuid_ = orderInfo["data"]["id"]
-                gNowTrade.entryPrice_ = entryPrice
-                gNowTrade.entryTimeStamp_ = int(time.time())
-                gNowTrade.position_ = count
-                gNowTrade.direction_ = "long"
-                trade = Trade(gNowTrade)
-                gTrades.append(trade)
-                print("do long, price:%lf, count:%d time:%d" % (entryPrice, count, trade.entryTimeStamp_,))
-                break
+        return True
 
-
-def doClose(listIndex, eventType):
-    global gTrades
-    global gOneMinListData
-    global gNowTrade
+def getNextListIndex(listIndex):
     global gRunRealTime
-    global gfmex
-
     if (gRunRealTime == False):
-        gNowTrade.exitPrice_ = eval(commonlib.replaceJudgeStr(eventType["price"]))
-        coinNum = gNowTrade.coinNum_
-        print("ori coin num:%lf" % coinNum)
-        position = gNowTrade.position_
-        print(position)
-        if (position < 0):
-            position = 0 - position
-        print(position)
-        if (gNowTrade.direction_ == "short"):
-            gNowTrade.coinNum_ = gNowTrade.coinNum_ - position / gNowTrade.entryPrice_ + position / gNowTrade.exitPrice_
-            print("do short close...")
-        else:
-            gNowTrade.coinNum_ = gNowTrade.coinNum_ + position / gNowTrade.entryPrice_ - position / gNowTrade.exitPrice_
-            print("do long close...")
-        gNowTrade.direction_ = "non-direction"
-
-        gNowTrade.position_ = 0
-
-        trade = Trade(gNowTrade)
-
-        print("now coin num:%lf" % trade.coinNum_)
-        print("enterPrice:%lf  exitPrice:%lf" % (trade.entryPrice_, trade.exitPrice_,))
-        print("      ")
-        gTrades.append(trade)    
+        return listIndex + 1
     else:
-        gNowTrade.exitPrice_ = eval(commonlib.replaceJudgeStr(eventType["price"]))
-        coinNum = gNowTrade.coinNum_
-        print("ori coin num:%lf" % coinNum)
-        position = gNowTrade.position_
-        print(position)
-        if (position < 0):
-            position = 0 - position
-        print(position)
-        if (gNowTrade.direction_ == "short"):
-            gNowTrade.coinNum_ = gNowTrade.coinNum_ - position / gNowTrade.entryPrice_ + position / gNowTrade.exitPrice_
-            print("do short close...")
-            gfmex.buy_limit_long("btcusd_p", gNowTrade.exitPrice_, position)
-        else:
-            gNowTrade.coinNum_ = gNowTrade.coinNum_ + position / gNowTrade.entryPrice_ - position / gNowTrade.exitPrice_
-            print("do long close...")
-            gfmex.sell_limit_short("btcusd_p", gNowTrade.exitPrice_, position)
-        gNowTrade.direction_ = "non-direction"
+        return 20
 
-        gNowTrade.position_ = 0
-
-        trade = Trade(gNowTrade)
-
-        print("now coin num:%lf" % trade.coinNum_)
-        print("enterPrice:%lf  exitPrice:%lf, time:%d"% (trade.entryPrice_, trade.exitPrice_, int(time.time())))
-        print("      ")
-        gTrades.append(trade)    
-
-def waitEvent(dictStrategy, listIndex):
-    global gOneMinListData
-    global gTrades
-    waitEvent = dictStrategy["waitEvent"]
-    for i in range(len(waitEvent)):
-        eventType = dictStrategy[waitEvent[i]]
-        eventResult = eventJudge(eventType, listIndex)
-        if (eventResult == True):
-            return waitEvent[i]
-    return "nothing happen"
-
-def runRealTime(strategyPath):
+def sleepSomeTime():
     global gRunRealTime
-    gRunRealTime = True
-    #runReal()
-    run(strategyPath)
-
-def runReal():
-    dictStrategy = strategyParse.parseStrategy("../strategy/trendFiveMinClose2.strategy")
-
-    global gOneMinListData
-    global gfmex
-    candleData = gfmex.get_candle_timestamp("M1", "btcusd_p", int(time.time()))["data"]
-    for val in candleData:
-        gOneMinListData.append(val)
-
-    #increase by id
-    gOneMinListData = list(reversed(gOneMinListData))
-
-    listIndex = 20
-    while (1):
-        event = waitEvent(dictStrategy, listIndex)
-        if (event == "openLong"):
-            doShort(listIndex, dictStrategy[event])
-        elif (event == "openShort"):
-            doLong(listIndex, dictStrategy[event])
-        elif (event == "closePosition"):
-            doClose(listIndex, dictStrategy[event])    
-        #else:
-            #in this date, nothing happend
-        #listIndex = listIndex + 1
+    if (gRunRealTime == False):
+        return
+    else:
         time.sleep(1)
-        gOneMinListData = []
-        candleData = gfmex.get_candle_timestamp("M1", "btcusd_p", int(time.time()))["data"]
-        for val in candleData:
-            gOneMinListData.append(val)
+        return
 
-        #increase by id
-        gOneMinListData = list(reversed(gOneMinListData))
-
-def runSimulation(strategyPath):
+def getNowTimeStamp(oneMinListData, listIndex):
     global gRunRealTime
-    gRunRealTime = False
-    run(strategyPath)
+    if (gRunRealTime == False):
+        return oneMinListData[listIndex]["id"]
+    else:
+        return int(time.time())
+    
+def doShort(entryPrice, count):
+    global gRunRealTime
+    if (gRunRealTime == False):
+        return 0
+    else:
+        return fmexOperation.doShort(entryPrice, count)
 
-#TODO merge real and simulation
-def run(strategyPath):
-    loadMongoData()
-    # this is test strategy FIXME
-    dictStrategy = strategyParse.parseStrategy(strategyPath)
+def doLong(entryPrice, count):
+    global gRunRealTime
+    if (gRunRealTime == False):
+        return 0
+    else:
+        return fmexOperation.doLong(entryPrice, count)
 
-    global gOneMinListData
-    listIndex = 0
-    while (listIndex < len(gOneMinListData)):
-        event = waitEvent(dictStrategy, listIndex)
-        if (event == "openLong"):
-            doShort(listIndex, dictStrategy[event])
-        elif (event == "openShort"):
-            doLong(listIndex, dictStrategy[event])
-        elif (event == "closePosition"):
-            doClose(listIndex, dictStrategy[event])    
-        #else:
-            #in this date, nothing happend
-        listIndex = listIndex + 1
+def doClose(entryPrice, count, direction):
+    global gRunRealTime
+    #close mean entry order
+    if (gRunRealTime == False):
+        return 0
+    else:
+        return fmexOperation.doClose(entryPrice, count, direction)
 
-    global gTrades
-    print(len(gTrades))
-    draw.drawCoinNum(gTrades)
-    draw.drawPosition(gTrades)
+global gRunRealTime
+gRunRealTime = False
 
 global gOneMinListData
 gOneMinListData = []
-global gTrades
-gTrades = []
-global gNowTrade
-gNowTrade = Trade()
-global gRunRealTime
-gRunRealTime = False
-global gfmex
-gfmex = Fmex()
-gfmex.auth(conf.key, conf.secret)
+loadMongoData()
 
 if __name__ == '__main__':
     runSimulation("../strategy/trendFiveMinClose2.strategy")
