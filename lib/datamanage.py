@@ -7,11 +7,9 @@ from pymongo import MongoClient
 from fmex import Fmex
 import strategyParse
 from trade import Trade
-import matplotlib
-matplotlib.use('Tkagg') # Must be before importing matplotlib.pyplot or pylab!
-import matplotlib.pyplot as plt
 import sys
 import conf
+import draw
 
 def loadMongoData():
     print("loadMongoData start...")
@@ -196,10 +194,11 @@ def waitEvent(dictStrategy, listIndex):
             return waitEvent[i]
     return "nothing happen"
 
-def runRealTime():
+def runRealTime(strategyPath):
     global gRunRealTime
     gRunRealTime = True
-    runReal()
+    #runReal()
+    run(strategyPath)
 
 def runReal():
     dictStrategy = strategyParse.parseStrategy("../strategy/trendFiveMinClose2.strategy")
@@ -234,20 +233,20 @@ def runReal():
         #increase by id
         gOneMinListData = list(reversed(gOneMinListData))
 
-def runSimulation():
+def runSimulation(strategyPath):
     global gRunRealTime
     gRunRealTime = False
-    run()
+    run(strategyPath)
 
 #TODO merge real and simulation
-def run():
+def run(strategyPath):
     loadMongoData()
     # this is test strategy FIXME
-    dictStrategy = strategyParse.parseStrategy("../strategy/trendFiveMinClose2.strategy")
+    dictStrategy = strategyParse.parseStrategy(strategyPath)
 
     global gOneMinListData
     listIndex = 0
-    while (listIndex <= len(gOneMinListData)):
+    while (listIndex < len(gOneMinListData)):
         event = waitEvent(dictStrategy, listIndex)
         if (event == "openLong"):
             doShort(listIndex, dictStrategy[event])
@@ -261,24 +260,8 @@ def run():
 
     global gTrades
     print(len(gTrades))
-    fig1 = plt.figure()
-    timeStamp = []
-    position = []
-    coinNum = []
-
-    for i in range(len(gTrades)):
-        timeStamp.append(gTrades[i].entryTimeStamp_)
-        position.append(gTrades[i].position_)
-        coinNum.append(gTrades[i].coinNum_)
-    plt.plot(timeStamp, position)
-    fig1.savefig('../pic/position.png')
-
-
-    fig2 = plt.figure()
-    plt.plot(timeStamp, coinNum)
-    fig2.savefig('../pic/coin.png')
-
-    plt.show()
+    draw.drawCoinNum(gTrades)
+    draw.drawPosition(gTrades)
 
 global gOneMinListData
 gOneMinListData = []
@@ -293,4 +276,4 @@ gfmex = Fmex()
 gfmex.auth(conf.key, conf.secret)
 
 if __name__ == '__main__':
-    runSimulation()
+    runSimulation("../strategy/trendFiveMinClose2.strategy")
