@@ -1,5 +1,5 @@
 #coding:utf-8
-import datamanage
+import pivot
 
-datamanage.runSimulation("../strategy/trendFiveMinClose2.strategy")
-#datamanage.runRealTime()
+pivot.runSimulation("../strategy/trendFiveMinClose2.strategy")
+#datamanage.runRealTime("../strategy/trendFiveMinClose2.strategy")

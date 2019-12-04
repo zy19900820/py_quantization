@@ -8,6 +8,11 @@ def getOneDataDirection(oneListData):
         return "null"
 
 def getDirection(listData, index, num):
+    if (index - num < 0):
+        return "null"
+    if (len(listData) < index + 1):
+        return "null"
+
     firstDirection = getOneDataDirection(listData[index - num])
     for i in range(0, num - 1):
         direction = getOneDataDirection(listData[index - num + 1 + i])
