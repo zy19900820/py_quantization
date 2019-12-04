@@ -15,7 +15,7 @@ def doLongLog(trade):
 def doCloseLog(trade):
     timeArray = time.localtime(trade.exitTimeStamp_)
     timeStr = time.strftime("%Y-%m--%d %H:%M:%S", timeArray)
-    print("do close, price:%lf, coinNum:%lf, time:%s" % (trade.entryPrice_,
+    print("do close, price:%lf, coinNum:%lf, time:%s" % (trade.exitPrice_,
         trade.coinNum_, timeStr))
 
 def doCloseErrorLog(timeStamp):

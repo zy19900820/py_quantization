@@ -117,9 +117,9 @@ def run(strategyPath):
     while (datamanage.ifHaveData(listIndex)):
         event = waitEvent(dictStrategy, oneMinListData, listIndex)
         if (event == "openLong"):
-            doShort(oneMinListData, listIndex, dictStrategy[event])
-        elif (event == "openShort"):
             doLong(oneMinListData, listIndex, dictStrategy[event])
+        elif (event == "openShort"):
+            doShort(oneMinListData, listIndex, dictStrategy[event])
         elif (event == "closePosition"):
             doClose(oneMinListData, listIndex, dictStrategy[event])    
         #else:
@@ -141,4 +141,4 @@ global gNowTrade
 gNowTrade = Trade()
 
 if __name__ == '__main__':
-    runSimulation("../strategy/trendFiveMinClose2.strategy")
+    runSimulation("../strategy/trendFiveMinClose.strategy")

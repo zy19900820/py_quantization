@@ -1,13 +1,13 @@
 {
     "waitEvent" : ["openLong", "openShort", "closePosition"],
     "openLong" : {
-        "formula" : "('short' == getDirection(${oneMinListData}, ${listIndex}, 4)) and (${position} == 0)",
-        "price" : "getBeforeClose(${oneMinListData}, ${listIndex}, 1)",
+        "formula" : "('short' == getDirection(${oneMinListData}, ${listIndex}, 2)) and (${position} == 0)",
+        "price" : "getBeforeClose(${oneMinListData}, ${listIndex}, 1) - 2",
         "count" : "position1000()"
     },
     "openShort" : {
-        "formula" : "('long' == getDirection(${oneMinListData}, ${listIndex}, 4)) and (${position} == 0)",
-        "price" : "getBeforeClose(${oneMinListData}, ${listIndex}, 1)",
+        "formula" : "('long' == getDirection(${oneMinListData}, ${listIndex}, 2)) and (${position} == 0)",
+        "price" : "getBeforeClose(${oneMinListData}, ${listIndex}, 1) + 2",
         "count" : "position1000()"
     },
     "closePosition" : {

@@ -38,7 +38,7 @@ def insertDataByType(dbSet, intervalType):
         elif (intervalType == "M3"):
             time.sleep(60*3)
         else:
-            time.sleep(2)
+            time.sleep(60)
 
         candleData = fmex.get_candle_timestamp(intervalType, "btcusd_p", int(time.time()))["data"]
         insertOne(dbSet, candleData)
