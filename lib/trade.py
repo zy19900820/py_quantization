@@ -20,6 +20,8 @@ class Trade:
         self.direction_ = "non-direction"
         self.entryTimeStamp_ = 0
         self.exitTimeStamp_ = 0
+        self.totalOpenPositionNum_ = 0
+        self.winOpenPosition_ = 0
 
     def copy_constructor(self, ori):
         self.uuid_ = ori.uuid_
@@ -34,6 +36,8 @@ class Trade:
         self.direction_ = ori.direction_
         self.entryTimeStamp_ = ori.entryTimeStamp_
         self.exitTimeStamp_ = ori.exitTimeStamp_
+        self.totalOpenPositionNum_ = ori.totalOpenPositionNum_
+        self.winOpenPosition_ = ori.winOpenPosition_
 
     def tradeToDict(self):
         return {
@@ -48,7 +52,9 @@ class Trade:
             "position" : self.position_,
             "direction" : self.direction_,
             "entryTimeStamp" : self.entryTimeStamp_,
-            "exitTimeStamp" : self.exitTimeStamp_
+            "exitTimeStamp" : self.exitTimeStamp_,
+            "totalOpenPositionNum" : self.totalOpenPositionNum_,
+            "winOpenPosition" : self.winOpenPosition_
         }
 
     def tradeToJson(self):

@@ -21,12 +21,20 @@ def doShort(oneMinListData, listIndex, eventType):
     count = eval(commonlib.replaceJudgeStr(eventType["count"]))
     uuid = datamanage.doShort(entryPrice, count)
     if (uuid != -1):
-        gNowTrade.entryTimeStamp_ = datamanage.getNowTimeStamp(oneMinListData, listIndex)
-        gNowTrade.direction_ = "short"
-        gNowTrade.position_ = gNowTrade.position_ - count
-        gNowTrade.entryPrice_ = entryPrice
         gNowTrade.uuid_ = uuid
-
+        gNowTrade.entryPrice_ = entryPrice
+        gNowTrade.exitPrice_ = 0
+        gNowTrade.stoplessPrice_ = 0
+        gNowTrade.profitPrice_ = 0
+        gNowTrade.commissionrate_ = 0
+        gNowTrade.commission_ = 0
+        #coin num
+        gNowTrade.position_ = gNowTrade.position_ - count
+        gNowTrade.direction_ = "short"
+        gNowTrade.entryTimeStamp_ = datamanage.getNowTimeStamp(oneMinListData, listIndex)
+        gNowTrade.exitTimeStamp_ = 0
+        gNowTrade.totalOpenPositionNum_ = gNowTrade.totalOpenPositionNum_ + 1
+        #winOpenPosition_
         trade = Trade(gNowTrade)
         gTrades.append(trade)    
         log.doShortLog(trade)
@@ -39,11 +47,20 @@ def doLong(oneMinListData, listIndex, eventType):
     count = eval(commonlib.replaceJudgeStr(eventType["count"]))
     uuid = datamanage.doLong(entryPrice, count)
     if (uuid != -1):
-        gNowTrade.entryTimeStamp_ = datamanage.getNowTimeStamp(oneMinListData, listIndex)
-        gNowTrade.direction_ = "long"
-        gNowTrade.position_ = gNowTrade.position_ + count
-        gNowTrade.entryPrice_ = entryPrice
         gNowTrade.uuid_ = uuid
+        gNowTrade.entryPrice_ = entryPrice
+        gNowTrade.exitPrice_ = 0
+        gNowTrade.stoplessPrice_ = 0
+        gNowTrade.profitPrice_ = 0
+        gNowTrade.commissionrate_ = 0
+        gNowTrade.commission_ = 0
+        #coin num
+        gNowTrade.position_ = gNowTrade.position_ + count
+        gNowTrade.direction_ = "long"
+        gNowTrade.entryTimeStamp_ = datamanage.getNowTimeStamp(oneMinListData, listIndex)
+        gNowTrade.exitTimeStamp_ = 0
+        gNowTrade.totalOpenPositionNum_ = gNowTrade.totalOpenPositionNum_ + 1
+        #winOpenPosition_
 
         trade = Trade(gNowTrade)
         gTrades.append(trade)    
@@ -64,15 +81,27 @@ def doClose(oneMinListData, listIndex, eventType):
         timeStamp = datamanage.getNowTimeStamp(oneMinListData, listIndex)
         uuid = datamanage.doClose(exitPrice, position, gNowTrade.direction_)
         if (uuid != -1):
+            #gNowTrade.uuid_ = uuid
+            #entryPrice
             gNowTrade.exitPrice_ = exitPrice
+            gNowTrade.stoplessPrice_ = 0
+            gNowTrade.profitPrice_ = 0
+            gNowTrade.commissionrate_ = 0
+            gNowTrade.commission_ = 0
+            #coin num
             coinNum = gNowTrade.coinNum_
             if (gNowTrade.direction_ == "short"):
                 gNowTrade.coinNum_ = gNowTrade.coinNum_ - position / gNowTrade.entryPrice_ + position / gNowTrade.exitPrice_
             else:
                 gNowTrade.coinNum_ = gNowTrade.coinNum_ + position / gNowTrade.entryPrice_ - position / gNowTrade.exitPrice_
-            gNowTrade.exitTimeStamp_ = datamanage.getNowTimeStamp(oneMinListData, listIndex)
-            gNowTrade.direction_ = "non-direction"
+
             gNowTrade.position_ = 0
+            gNowTrade.direction_ = "non-direction"
+            #entryTimeStamp 
+            gNowTrade.exitTimeStamp_ = datamanage.getNowTimeStamp(oneMinListData, listIndex)
+            #totalOpenPositionNum
+            if (gNowTrade.coinNum_ > coinNum):
+                gNowTrade.winOpenPosition_ = gNowTrade.winOpenPosition_ + 1
 
             trade = Trade(gNowTrade)
             gTrades.append(trade)    

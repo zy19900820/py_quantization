@@ -25,5 +25,9 @@ def doCloseErrorLog(timeStamp):
     print("do close error, time:%s" % timeStr)
 
 def logAllTrade(trades):
+    f = open("trades.txt", "w+")
     for var in trades:
-        print(var.tradeToJson()) 
+        #print(var.tradeToJson()) 
+        f.write(var.tradeToJson())
+        f.write("\n")
+    f.close()
