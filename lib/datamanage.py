@@ -5,6 +5,7 @@ import sys
 import fmexOperation
 import pivot
 from commonlib import getOpenOrderStatus
+import json
 
 def loadMongoData():
     print("loadMongoData start...")
@@ -19,6 +20,11 @@ def loadMongoData():
     print("loadMongoData end...")
     print("end data...")
     print(gOneMinListData[-1])
+
+def printDataToFile():
+    global gOneMinListData
+    for val in gOneMinListData:
+        print(val)
 
 def setRunType(bRunRealTime):
     global gRunRealTime
@@ -97,6 +103,9 @@ def dbGetOpenOrderStatus(oneMinListData, listIndex, orderStatusStr, trade):
     if (gRunRealTime == False):
         direction = trade.direction_
         entryPrice = trade.entryPrice_
+        #print(direction)
+        #print(entryPrice)
+        #print(trade.entryTimeStamp_)
         return eval(orderStatusStr)
     else:
         return fmexOperation.getOpenOrderStatus(trade.uuid_)
@@ -104,9 +113,16 @@ def dbGetOpenOrderStatus(oneMinListData, listIndex, orderStatusStr, trade):
 def cancelOrder(uuid):
     global gRunRealTime
     if (gRunRealTime == False):
-        return 
+        return "fully_cancelled"
     else:
         return fmexOperation.cancelOrder(uuid)
+
+def getOrderFillNum(uuid):
+    global gRunRealTime
+    if (gRunRealTime == False):
+        return 0
+    else:
+        return fmexOperation.getOrderFillNum(uuid)
 
 global gRunRealTime
 gRunRealTime = False
@@ -116,4 +132,4 @@ gOneMinListData = []
 loadMongoData()
 
 if __name__ == '__main__':
-    runSimulation("../strategy/trendFiveMinClose2.strategy")
+    printDataToFile()

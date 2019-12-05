@@ -28,10 +28,12 @@ def getOpenOrderStatus(listData, index, compareNum, direction, entryPrice):
     #mean do short
     if (direction == "short"):
         for i in range(0, compareNum):
+            #print(listData[index - compareNum + i]["high"])
             if (listData[index - compareNum + i]["high"] > entryPrice):
                 return "fully_filled"
     else:
         for i in range(0, compareNum):
+            #print(listData[index - compareNum + i]["low"])
             if (listData[index - compareNum + i]["low"] < entryPrice):
                 return "fully_filled"
     

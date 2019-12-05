@@ -41,11 +41,21 @@ def doClose(entryPrice, count, direction):
 
 def getOpenOrderStatus(uuid):
     global gfmex
-    return gfmex.get_order(uuid)
+    return gfmex.get_order(uuid)["data"]["status"]
 
 def cancelOrder(uuid):
     global gfmex
-    return gfmex.cancel_order(uuid)
+    gfmex.cancel_order(uuid)
+    orderStatus = gfmex.get_order(uuid)["data"]["status"]
+    while(orderStatus != "partial_cancelled" and orderStatus != "fully_cancelled"):
+        time.sleep(0.3)
+        orderStatus = gfmex.get_order(uuid)["data"]["status"]
+    return orderStatus
+
+def getOrderFillNum(uuid):
+    global gfmex
+    orderInfo = gfmex.get_order(uuid)["data"]
+    return orderInfo["quantity"] - orderInfo["unfilled_quantity"]
 
 global gfmex
 gfmex = Fmex()

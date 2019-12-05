@@ -66,6 +66,41 @@ def doLong(oneMinListData, listIndex, eventType):
         gTrades.append(trade)    
         log.doLongLog(trade)
 
+def doDBCloseAndSave(oneMinListData, listIndex, exitPrice, position):
+    global gNowTrade
+    global gTrades
+
+    uuid = datamanage.doClose(exitPrice, position, gNowTrade.direction_)
+    if (uuid != -1):
+        #gNowTrade.uuid_ = uuid
+        #entryPrice
+        gNowTrade.exitPrice_ = exitPrice
+        gNowTrade.stoplessPrice_ = 0
+        gNowTrade.profitPrice_ = 0
+        gNowTrade.commissionrate_ = 0
+        gNowTrade.commission_ = 0
+        #coin num
+        coinNum = gNowTrade.coinNum_
+        if (gNowTrade.direction_ == "short"):
+            gNowTrade.coinNum_ = gNowTrade.coinNum_ - position / gNowTrade.entryPrice_ + position / gNowTrade.exitPrice_
+        else:
+            gNowTrade.coinNum_ = gNowTrade.coinNum_ + position / gNowTrade.entryPrice_ - position / gNowTrade.exitPrice_
+
+        gNowTrade.position_ = 0
+        gNowTrade.direction_ = "non-direction"
+        #entryTimeStamp 
+        gNowTrade.exitTimeStamp_ = datamanage.getNowTimeStamp(oneMinListData, listIndex)
+        #totalOpenPositionNum
+        if (gNowTrade.coinNum_ > coinNum):
+            gNowTrade.winOpenPosition_ = gNowTrade.winOpenPosition_ + 1
+
+        trade = Trade(gNowTrade)
+        gTrades.append(trade)    
+        log.doCloseLog(trade)
+    else:
+        timeStamp = datamanage.getNowTimeStamp(oneMinListData, listIndex)
+        log.doCloseErrorLog(exitPrice, position, gNowTrade.direction_, timeStamp)
+
 def doClose(oneMinListData, listIndex, eventType):
     global gTrades
     global gNowTrade
@@ -77,42 +112,32 @@ def doClose(oneMinListData, listIndex, eventType):
 
     orderStatusStr = commonlib.replaceJudgeStr(eventType["orderStatus"])
     orderStatus = datamanage.dbGetOpenOrderStatus(oneMinListData, listIndex, orderStatusStr, gNowTrade)
+    #orderStatus = "fully_filled"
     if (orderStatus == "fully_filled"):
-        timeStamp = datamanage.getNowTimeStamp(oneMinListData, listIndex)
-        uuid = datamanage.doClose(exitPrice, position, gNowTrade.direction_)
-        if (uuid != -1):
-            #gNowTrade.uuid_ = uuid
-            #entryPrice
-            gNowTrade.exitPrice_ = exitPrice
-            gNowTrade.stoplessPrice_ = 0
-            gNowTrade.profitPrice_ = 0
-            gNowTrade.commissionrate_ = 0
-            gNowTrade.commission_ = 0
-            #coin num
-            coinNum = gNowTrade.coinNum_
-            if (gNowTrade.direction_ == "short"):
-                gNowTrade.coinNum_ = gNowTrade.coinNum_ - position / gNowTrade.entryPrice_ + position / gNowTrade.exitPrice_
-            else:
-                gNowTrade.coinNum_ = gNowTrade.coinNum_ + position / gNowTrade.entryPrice_ - position / gNowTrade.exitPrice_
-
-            gNowTrade.position_ = 0
-            gNowTrade.direction_ = "non-direction"
-            #entryTimeStamp 
-            gNowTrade.exitTimeStamp_ = datamanage.getNowTimeStamp(oneMinListData, listIndex)
-            #totalOpenPositionNum
-            if (gNowTrade.coinNum_ > coinNum):
-                gNowTrade.winOpenPosition_ = gNowTrade.winOpenPosition_ + 1
-
-            trade = Trade(gNowTrade)
-            gTrades.append(trade)    
-            log.doCloseLog(trade)
-        else:
-            log.doCloseErrorLog(timeStamp)
+        doDBCloseAndSave(oneMinListData, listIndex, exitPrice, position)
     elif (orderStatus == "pending"):
-        datamanage.cancelOrder(gNowTrade.uuid_)
-    else:
-        #FIXME
-        print("error status:%s" % orderStatus)
+        orderStatus = datamanage.cancelOrder(gNowTrade.uuid_)
+        if (orderStatus == "fully_canceled"):
+            trade = Trade()
+            trade.coinNum_ = gNowTrade.coinNum_
+            trade.totalOpenPositionNum_ = gNowTrade.totalOpenPositionNum_ - 1
+            gNowTrade = trade
+            del(gTrades[-1])
+        elif (orderStatus == "fully_filled"):
+            doDBCloseAndSave(oneMinListData, listIndex, exitPrice, position)
+        elif (orderStatus == "partial_canceled"):
+            fillNum = getOrderFillNum(gNowTrade.uuid_)
+            doDBCloseAndSave(oneMinListData, listIndex, exitPrice, fillNum)
+    elif (orderStatus == "partial_filled"):
+        # simulation can't do this
+        orderStatus = datamanage.cancelOrder(gNowTrade.uuid_)
+        if (orderStatus == "fully_filled"):
+            doDBCloseAndSave(oneMinListData, listIndex, exitPrice, position)
+        elif (orderStatus == "partial_canceled"):
+            fillNum = getOrderFillNum(gNowTrade.uuid_)
+            doDBCloseAndSave(oneMinListData, listIndex, exitPrice, fillNum)
+
+
 
 
 def eventJudge(eventType, oneMinListData, listIndex):

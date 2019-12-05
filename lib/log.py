@@ -19,10 +19,12 @@ def doCloseLog(trade):
     print("do close, price:%lf, coinNum:%lf, time:%s" % (trade.exitPrice_,
         trade.coinNum_, timeStr))
 
-def doCloseErrorLog(timeStamp):
+def doCloseErrorLog(exitPrice, position, direction, timeStamp):
+    #direction long  mean do short
     timeArray = time.localtime(timeStamp)
     timeStr = time.strftime("%Y-%m--%d %H:%M:%S", timeArray)
-    print("do close error, time:%s" % timeStr)
+    print("do close error, price:%lf, position:%d, direction:%s time:%s" % (exitPrice,
+        position, direction, timeStr))
 
 def logAllTrade(trades):
     f = open("trades.txt", "w+")
