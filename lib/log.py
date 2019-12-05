@@ -1,4 +1,5 @@
 import time
+import trade
 
 def doShortLog(trade):
     timeArray = time.localtime(trade.entryTimeStamp_)
@@ -22,3 +23,7 @@ def doCloseErrorLog(timeStamp):
     timeArray = time.localtime(timeStamp)
     timeStr = time.strftime("%Y-%m--%d %H:%M:%S", timeArray)
     print("do close error, time:%s" % timeStr)
+
+def logAllTrade(trades):
+    for var in trades:
+        print(var.tradeToJson()) 

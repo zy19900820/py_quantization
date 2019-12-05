@@ -39,6 +39,14 @@ def doClose(entryPrice, count, direction):
     else:
         return doShort(entryPrice, count)
 
+def getOpenOrderStatus(uuid):
+    global gfmex
+    return gfmex.get_order(uuid)
+
+def cancelOrder(uuid):
+    global gfmex
+    return gfmex.cancel_order(uuid)
+
 global gfmex
 gfmex = Fmex()
 

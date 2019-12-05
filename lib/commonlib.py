@@ -22,6 +22,22 @@ def getDirection(listData, index, num):
 
 def getBeforeClose(listData, index, num):
     return listData[index - num]["close"]
+
+#@param compareNum   set order and before close min data num
+def getOpenOrderStatus(listData, index, compareNum, direction, entryPrice):
+    #mean do short
+    if (direction == "short"):
+        for i in range(0, compareNum):
+            if (listData[index - compareNum + i]["high"] > entryPrice):
+                return "fully_filled"
+    else:
+        for i in range(0, compareNum):
+            if (listData[index - compareNum + i]["low"] < entryPrice):
+                return "fully_filled"
+    
+    return "pending"
+
+    
     
 def replaceJudgeStr(judgeStr):
     evalStr = judgeStr

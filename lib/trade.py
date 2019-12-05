@@ -1,3 +1,5 @@
+import json
+
 class Trade:
     def __init__(self, ori=None):
         if (ori is None):
@@ -32,3 +34,22 @@ class Trade:
         self.direction_ = ori.direction_
         self.entryTimeStamp_ = ori.entryTimeStamp_
         self.exitTimeStamp_ = ori.exitTimeStamp_
+
+    def tradeToDict(self):
+        return {
+            "uuid" : self.uuid_,
+            "entryPrice" : self.entryPrice_,
+            "exitPrice" : self.exitPrice_,
+            "stoplessPrice" : self.stoplessPrice_,
+            "profitPrice" : self.profitPrice_,
+            "commissionrate" : self.commissionrate_,
+            "commission" : self.commission_,
+            "coinNum" : self.coinNum_,
+            "position" : self.position_,
+            "direction" : self.direction_,
+            "entryTimeStamp" : self.entryTimeStamp_,
+            "exitTimeStamp" : self.exitTimeStamp_
+        }
+
+    def tradeToJson(self):
+        return json.dumps(self.tradeToDict())

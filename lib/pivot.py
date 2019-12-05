@@ -58,24 +58,32 @@ def doClose(oneMinListData, listIndex, eventType):
     if (position < 0):
         position = 0 - position
 
-    timeStamp = datamanage.getNowTimeStamp(oneMinListData, listIndex)
-    uuid = datamanage.doClose(exitPrice, position, gNowTrade.direction_)
-    if (uuid != -1):
-        gNowTrade.exitPrice_ = exitPrice
-        coinNum = gNowTrade.coinNum_
-        if (gNowTrade.direction_ == "short"):
-            gNowTrade.coinNum_ = gNowTrade.coinNum_ - position / gNowTrade.entryPrice_ + position / gNowTrade.exitPrice_
-        else:
-            gNowTrade.coinNum_ = gNowTrade.coinNum_ + position / gNowTrade.entryPrice_ - position / gNowTrade.exitPrice_
-        gNowTrade.exitTimeStamp_ = datamanage.getNowTimeStamp(oneMinListData, listIndex)
-        gNowTrade.direction_ = "non-direction"
-        gNowTrade.position_ = 0
+    orderStatusStr = commonlib.replaceJudgeStr(eventType["orderStatus"])
+    orderStatus = datamanage.dbGetOpenOrderStatus(oneMinListData, listIndex, orderStatusStr, gNowTrade)
+    if (orderStatus == "fully_filled"):
+        timeStamp = datamanage.getNowTimeStamp(oneMinListData, listIndex)
+        uuid = datamanage.doClose(exitPrice, position, gNowTrade.direction_)
+        if (uuid != -1):
+            gNowTrade.exitPrice_ = exitPrice
+            coinNum = gNowTrade.coinNum_
+            if (gNowTrade.direction_ == "short"):
+                gNowTrade.coinNum_ = gNowTrade.coinNum_ - position / gNowTrade.entryPrice_ + position / gNowTrade.exitPrice_
+            else:
+                gNowTrade.coinNum_ = gNowTrade.coinNum_ + position / gNowTrade.entryPrice_ - position / gNowTrade.exitPrice_
+            gNowTrade.exitTimeStamp_ = datamanage.getNowTimeStamp(oneMinListData, listIndex)
+            gNowTrade.direction_ = "non-direction"
+            gNowTrade.position_ = 0
 
-        trade = Trade(gNowTrade)
-        gTrades.append(trade)    
-        log.doCloseLog(trade)
+            trade = Trade(gNowTrade)
+            gTrades.append(trade)    
+            log.doCloseLog(trade)
+        else:
+            log.doCloseErrorLog(timeStamp)
+    elif (orderStatus == "pending"):
+        datamanage.cancelOrder(gNowTrade.uuid_)
     else:
-        log.doCloseErrorLog(timeStamp)
+        #FIXME
+        print("error status:%s" % orderStatus)
 
 
 def eventJudge(eventType, oneMinListData, listIndex):
@@ -131,6 +139,7 @@ def run(strategyPath):
 
     global gTrades
     print(len(gTrades))
+    log.logAllTrade(gTrades)
     draw.drawCoinNum(gTrades)
     draw.drawPosition(gTrades)
     draw.drawPrice(gTrades)

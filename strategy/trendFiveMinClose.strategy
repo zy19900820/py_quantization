@@ -12,6 +12,7 @@
     },
     "closePosition" : {
         "formula" : "(${nowTimeStamp} >= ${openPositionTimeStamp} + 60 * 5) and (${position} != 0)",
-        "price" : "getBeforeClose(${oneMinListData}, ${listIndex}, 1)"
+        "price" : "getBeforeClose(${oneMinListData}, ${listIndex}, 1)",
+        "orderStatus" : "getOpenOrderStatus(${oneMinListData}, ${listIndex}, 5, ${direction}, ${entryPrice})"
     }
 }

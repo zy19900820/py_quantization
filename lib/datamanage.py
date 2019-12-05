@@ -1,12 +1,10 @@
 #coding:utf-8
-from commonlib import getDirection
-from commonlib import getBeforeClose
-import commonlib
 import time
 from pymongo import MongoClient
-from trade import Trade
 import sys
 import fmexOperation
+import pivot
+from commonlib import getOpenOrderStatus
 
 def loadMongoData():
     print("loadMongoData start...")
@@ -19,6 +17,8 @@ def loadMongoData():
         gOneMinListData.append(val)
 
     print("loadMongoData end...")
+    print("end data...")
+    print(gOneMinListData[-1])
 
 def setRunType(bRunRealTime):
     global gRunRealTime
@@ -91,6 +91,22 @@ def doClose(entryPrice, count, direction):
         return 0
     else:
         return fmexOperation.doClose(entryPrice, count, direction)
+
+def dbGetOpenOrderStatus(oneMinListData, listIndex, orderStatusStr, trade):
+    global gRunRealTime
+    if (gRunRealTime == False):
+        direction = trade.direction_
+        entryPrice = trade.entryPrice_
+        return eval(orderStatusStr)
+    else:
+        return fmexOperation.getOpenOrderStatus(trade.uuid_)
+
+def cancelOrder(uuid):
+    global gRunRealTime
+    if (gRunRealTime == False):
+        return 
+    else:
+        return fmexOperation.cancelOrder(uuid)
 
 global gRunRealTime
 gRunRealTime = False
