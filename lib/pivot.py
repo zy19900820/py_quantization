@@ -117,15 +117,16 @@ def doClose(oneMinListData, listIndex, eventType):
         doDBCloseAndSave(oneMinListData, listIndex, exitPrice, position)
     elif (orderStatus == "pending"):
         orderStatus = datamanage.cancelOrder(gNowTrade.uuid_)
-        if (orderStatus == "fully_canceled"):
+        if (orderStatus == "fully_cancelled"):
             trade = Trade()
             trade.coinNum_ = gNowTrade.coinNum_
+            trade.winOpenPosition_ = gNowTrade.winOpenPosition_
             trade.totalOpenPositionNum_ = gNowTrade.totalOpenPositionNum_ - 1
             gNowTrade = trade
             del(gTrades[-1])
         elif (orderStatus == "fully_filled"):
             doDBCloseAndSave(oneMinListData, listIndex, exitPrice, position)
-        elif (orderStatus == "partial_canceled"):
+        elif (orderStatus == "partial_cancelled"):
             fillNum = getOrderFillNum(gNowTrade.uuid_)
             doDBCloseAndSave(oneMinListData, listIndex, exitPrice, fillNum)
     elif (orderStatus == "partial_filled"):
@@ -133,12 +134,9 @@ def doClose(oneMinListData, listIndex, eventType):
         orderStatus = datamanage.cancelOrder(gNowTrade.uuid_)
         if (orderStatus == "fully_filled"):
             doDBCloseAndSave(oneMinListData, listIndex, exitPrice, position)
-        elif (orderStatus == "partial_canceled"):
+        elif (orderStatus == "partial_cancelled"):
             fillNum = getOrderFillNum(gNowTrade.uuid_)
             doDBCloseAndSave(oneMinListData, listIndex, exitPrice, fillNum)
-
-
-
 
 def eventJudge(eventType, oneMinListData, listIndex):
     global gNowTrade
