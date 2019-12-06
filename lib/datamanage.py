@@ -3,12 +3,13 @@ import time
 from pymongo import MongoClient
 import sys
 import fmexOperation
-import pivot
 from commonlib import getOpenOrderStatus
 import json
+import traceback
 
 def loadMongoData():
     print("loadMongoData start...")
+    #traceback.print_stack()
 
     global gOneMinListData
     conn = MongoClient('127.0.0.1', 27017)
@@ -16,6 +17,11 @@ def loadMongoData():
     col = db["btcusd_p_M1"]
     for val in col.find().sort("id", 1):
         gOneMinListData.append(val)
+
+    #clear old data
+    #for i in range(0, len(gOneMinListData)):
+    #    if (gOneMinListData[i]["id"] == gOneMinListData[i - 1]["id"]):
+    #        col.remove(gOneMinListData[i - 1])
 
     print("loadMongoData end...")
     print("end data...")
@@ -25,6 +31,14 @@ def printDataToFile():
     global gOneMinListData
     for val in gOneMinListData:
         print(val)
+
+def printSameIDDataToFile():
+    global gOneMinListData
+    for i in range(0, len(gOneMinListData)):
+        if (gOneMinListData[i]["id"] == gOneMinListData[i - 1]["id"]):
+            print(gOneMinListData[i-1])
+            print(gOneMinListData[i])
+            print("       ")
 
 def setRunType(bRunRealTime):
     global gRunRealTime
@@ -133,3 +147,4 @@ loadMongoData()
 
 if __name__ == '__main__':
     printDataToFile()
+    #printSameIDDataToFile()

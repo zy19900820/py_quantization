@@ -8,7 +8,8 @@ import thread
 
 def insertOne(dbSet, data):
     for value in data:
-        dbSet.update_one(value, {"$set":value}, upsert=True)
+        valueID = {"id":value["id"]}
+        dbSet.update_one(valueID, {"$set":value}, upsert=True)
 
 def insertDataByType(dbSet, intervalType):
     candleData = fmex.get_candle_timestamp(intervalType, "btcusd_p", int(time.time()))["data"]
@@ -20,6 +21,8 @@ def insertDataByType(dbSet, intervalType):
         insertOne(dbSet, candleData)
         candleData = fmex.get_candle_timestamp(intervalType, "btcusd_p", id)["data"]
 
+
+    print "load over..."
     while (1):
         if (intervalType == "D1"):
             time.sleep(60*60*24)
