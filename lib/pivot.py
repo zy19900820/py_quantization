@@ -11,7 +11,7 @@ import datamanage
 import log
 
 def position1000():
-    return 1
+    return 1000
 
 def doShort(oneMinListData, listIndex, eventType):
     global gTrades
@@ -204,4 +204,4 @@ global gNowTrade
 gNowTrade = Trade()
 
 if __name__ == '__main__':
-    runSimulation("../strategy/trendFiveMinClose.strategy")
+    runSimulation("../strategy/trendFiveMinClose1.strategy")
