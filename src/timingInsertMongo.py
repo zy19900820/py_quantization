@@ -61,5 +61,4 @@ thread.start_new_thread(insertDataByType, (db.btcusd_p_M5, "M5", ))
 thread.start_new_thread(insertDataByType, (db.btcusd_p_M3, "M3", ))
 thread.start_new_thread(insertDataByType, (db.btcusd_p_M1, "M1", ))
 
-while 1:
-    time.sleep(1111111)
+time.sleep(600)
