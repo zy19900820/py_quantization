@@ -27,6 +27,59 @@ def loadMongoData():
     print("end data...")
     print(gOneMinListData[-1])
 
+def saveDay2Txt():
+    OneDayListData = list()
+    conn = MongoClient('127.0.0.1', 27017)
+    db = conn["fmexCandleData"]
+    col = db["btcusd_p_D1"]
+    for val in col.find().sort("id", 1):
+        OneDayListData.append(val)
+
+    f = open("../datas/fmexDay2019.txt", "w+")
+    f.write("Date,Open,High,Low,Close,Adj Close,Volume\n")
+    for i, data in enumerate(OneDayListData):
+        timeArray = time.localtime(data["id"])
+        timeStr = time.strftime("%Y-%m-%d", timeArray)
+        f.write("%s,%.1f,%.1f,%.1f,%.1f,%.1f,%f\n" % (timeStr, data["open"],
+            data["high"], data["low"], data["close"], data["close"], data["quote_vol"]))
+    f.close()
+
+def saveOneMin2Txt():
+    OneMinListData = list()
+    conn = MongoClient('127.0.0.1', 27017)
+    db = conn["fmexCandleData"]
+    col = db["btcusd_p_M1"]
+    for val in col.find().sort("id", 1):
+        OneMinListData.append(val)
+
+    f = open("../datas/fmexOneMin2019.txt", "w+")
+    f.write("Date,Time,Open,High,Low,Close,Volume,OpenInterest\n")
+    for i, data in enumerate(OneMinListData):
+        timeArray = time.localtime(data["id"])
+        timeDataStr = time.strftime("%Y-%m-%d", timeArray)
+        timeTimeStr = time.strftime("%H:%M:%S", timeArray)
+        f.write("%s,%s,%.1f,%.1f,%.1f,%.1f,%f, 0.0\n" % (timeDataStr, timeTimeStr, data["open"],
+            data["high"], data["low"], data["close"], data["quote_vol"]))
+    f.close()
+
+def saveFourHour2Txt():
+    fourHourListData = list()
+    conn = MongoClient('127.0.0.1', 27017)
+    db = conn["fmexCandleData"]
+    col = db["btcusd_p_H4"]
+    for val in col.find().sort("id", 1):
+        fourHourListData.append(val)
+
+    f = open("../datas/fmexFourHour2019.txt", "w+")
+    f.write("Date,Time,Open,High,Low,Close,Volume,OpenInterest\n")
+    for i, data in enumerate(fourHourListData):
+        timeArray = time.localtime(data["id"])
+        timeDataStr = time.strftime("%Y-%m-%d", timeArray)
+        timeTimeStr = time.strftime("%H:%M:%S", timeArray)
+        f.write("%s,%s,%.1f,%.1f,%.1f,%.1f,%f, 0.0\n" % (timeDataStr, timeTimeStr, data["open"],
+            data["high"], data["low"], data["close"], data["quote_vol"]))
+    f.close()
+
 def printDataToFile():
     global gOneMinListData
     for val in gOneMinListData:
@@ -143,8 +196,11 @@ gRunRealTime = False
 
 global gOneMinListData
 gOneMinListData = []
-loadMongoData()
+#loadMongoData()
 
 if __name__ == '__main__':
-    printDataToFile()
+    #printDataToFile()
     #printSameIDDataToFile()
+    #saveDay2Txt()
+    saveOneMin2Txt()
+    #saveFourHour2Txt()

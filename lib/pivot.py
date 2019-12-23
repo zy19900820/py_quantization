@@ -202,4 +202,4 @@ global gNowTrade
 gNowTrade = Trade()
 
 if __name__ == '__main__':
-    runSimulation("../strategy/trendFiveMinClose1.strategy")
+    runSimulation("../strategy/trendFiveMinClose.strategy")
